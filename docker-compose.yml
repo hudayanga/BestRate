@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  forexapi:
+    image: ${DOCKER_REGISTRY-}forexapi
+    build:
+      context: .
+      dockerfile: ForexApi/Dockerfile

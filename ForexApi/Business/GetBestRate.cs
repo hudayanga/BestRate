@@ -1,0 +1,11 @@
+﻿using System; using System.Collections; using System.Collections.Generic; using System.Linq; using ForexApi.Data;  namespace ForexApi {     public class GetBestRate     {         private readonly ForexDbContex context;          public GetBestRate()         {             context = new ForexDbContex();         }          public decimal FindBestRate(int amount)         {             var rates = context.Rates.ToList();              var sorted = rates.OrderByDescending(x => x.Rate);              var bestRate = CalcBestRate(sorted, amount);              return bestRate;         }          private decimal CalcBestRate(IEnumerable<RateData> rates, int amount)         {             for (int i = 1; i < rates.Count() + 1; i++)             {                 var sumSupply = rates.Take(i).Sum(x => x.Supply);                  if (sumSupply >= amount)                 {                     var final = 0M;                     var balance = amount;                      for (int j = 0; j < i; j++)                     {                         var su = (rates.ElementAt(j).Supply);                         var ra = (rates.ElementAt(j).Rate);                         var id = (rates.ElementAt(j).Id);                            if (balance > su)                         {                             final = final + (ra * su);                              UpdateSupply(id,su);                          }                         else                         {                             final = final + (balance * ra);
+
+                            UpdateSupply(id, balance);
+                        }                          balance = balance - su;                      }                      var bestRate = final / amount;                      return bestRate;                 }                 else                 {                     continue;                 }              }              return 0;          }          private void UpdateSupply(int id, int quantity)
+        {
+
+            var item = context.Rates.FirstOrDefault(x => x.Id == id);              if(item != null)
+            {
+                item.Supply = item.Supply - quantity;                 context.SaveChanges();
+            }
+        }       } }  
